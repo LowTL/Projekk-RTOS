@@ -3,13 +3,7 @@
 #include "cmsis_os2.h"
 #include "system_MKL25Z4.h"             // Keil::Device:Startup
 #include "MKL25Z4.h"                    // Device header
-
-#define RED_LED 18
-#define GREEN_LED 19
-#define BLUE_LED 1
-#define BAUD_RATE 128000
-
-#define MASK(x)(1 << (x))
+#include "constants.h"
 
 void initUART2()
 {
@@ -73,3 +67,5 @@ void initLED() {
 	PTB->PSOR |= (1 << RED_LED | 1 << GREEN_LED);
 	PTD->PSOR |= 1 << BLUE_LED;
 }
+
+

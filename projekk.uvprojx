@@ -10,6 +10,7 @@
       <TargetName>Target 1</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
+      <pCCUsed>5060750::V5.06 update 6 (build 750)::ARMCC</pCCUsed>
       <uAC6>0</uAC6>
       <TargetOption>
         <TargetCommonOption>
@@ -385,6 +386,21 @@
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\main.c</FilePath>
+            </File>
+            <File>
+              <FileName>progInit.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\progInit.h</FilePath>
+            </File>
+            <File>
+              <FileName>ledControl.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\ledControl.h</FilePath>
+            </File>
+            <File>
+              <FileName>constants.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\constants.h</FilePath>
             </File>
           </Files>
         </Group>

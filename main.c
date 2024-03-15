@@ -8,6 +8,7 @@
 #include "system_MKL25Z4.h"             // Keil::Device:Startup
 #include "MKL25Z4.h"                    // Device header
 #include "progInit.h"
+#include "ledControl.h"
 
 uint8_t UART2_Receive_Poll(void)
 {
@@ -15,7 +16,7 @@ uint8_t UART2_Receive_Poll(void)
 	while (!(UART2->S1 & UART_S1_RDRF_MASK));
 	return (UART2->D);	
 }
- 
+
 /*----------------------------------------------------------------------------
  * Application main thread
  *---------------------------------------------------------------------------*/
@@ -50,6 +51,7 @@ int main (void) {
   // System Initialization
   SystemCoreClockUpdate();
 	initUART2();
+	initLED();
   // ...
  
   osKernelInitialize();                 // Initialize CMSIS-RTOS

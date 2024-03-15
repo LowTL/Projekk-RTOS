@@ -30,16 +30,11 @@ Rebuild target 'Target 1'
 assembling startup_MKL25Z4.s...
 compiling RTX_Config.c...
 compiling rtx_lib.c...
-compiling main.c...
-main.c(59): error:  #20: identifier "UART_TX_PORTE22" is undefined
-  	PORTE->PCR[UART_TX_PORTE22] &= ~PORT_PCR_MUX_MASK;
-main.c(62): error:  #20: identifier "UART_TX_PORTE23" is undefined
-  	PORTE->PCR[UART_TX_PORTE23] &= ~PORT_PCR_MUX_MASK;
-main.c(70): error:  #29: expected an expression
-  	divisor = bus_clock / (BAUD_RATE * 16);
-main.c: 0 warnings, 3 errors
 compiling system_MKL25Z4.c...
-".\Objects\projekk.axf" - 3 Error(s), 0 Warning(s).
+compiling main.c...
+linking...
+Program Size: Code=6596 RO-data=496 RW-data=5112 ZI-data=264  
+".\Objects\projekk.axf" - 0 Error(s), 0 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -93,8 +88,7 @@ Package Vendor: Keil
       Source file:   Device\Source\ARM\startup_MKL25Z4.s
       Source file:   Device\Source\system_MKL25Z4.c
       Include file:  Device\Source\system_MKL25Z4.h
-Target not created.
-Build Time Elapsed:  00:00:00
+Build Time Elapsed:  00:00:01
 </pre>
 </body>
 </html>
