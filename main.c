@@ -1,0 +1,31 @@
+/*----------------------------------------------------------------------------
+ * CMSIS-RTOS 'main' function template
+ *---------------------------------------------------------------------------*/
+ 
+#include "RTE_Components.h"
+#include  CMSIS_device_header
+#include "cmsis_os2.h"
+#include "system_MKL25Z4.h"             // Keil::Device:Startup
+#include "MKL25Z4.h"                    // Device header
+
+ 
+/*----------------------------------------------------------------------------
+ * Application main thread
+ *---------------------------------------------------------------------------*/
+void app_main (void *argument) {
+ 
+  // ...
+  for (;;) {}
+}
+ 
+int main (void) {
+ 
+  // System Initialization
+  SystemCoreClockUpdate();
+  // ...
+ 
+  osKernelInitialize();                 // Initialize CMSIS-RTOS
+  osThreadNew(app_main, NULL, NULL);    // Create application main thread
+  osKernelStart();                      // Start thread execution
+  for (;;) {}
+}
