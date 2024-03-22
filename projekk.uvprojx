@@ -402,6 +402,16 @@
               <FileType>5</FileType>
               <FilePath>.\constants.h</FilePath>
             </File>
+            <File>
+              <FileName>buzzerControl.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\buzzerControl.h</FilePath>
+            </File>
+            <File>
+              <FileName>uartControl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\uartControl.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

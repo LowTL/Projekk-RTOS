@@ -1,20 +1,32 @@
 /*----------------------------------------------------------------------------
  * CMSIS-RTOS 'main' function template
  *---------------------------------------------------------------------------*/
- 
-#include "RTE_Components.h"
-#include  CMSIS_device_header
-#include "cmsis_os2.h"
-#include "system_MKL25Z4.h"             // Keil::Device:Startup
-#include "MKL25Z4.h"                    // Device header
+#include "constants.h"
 #include "progInit.h"
 #include "ledControl.h"
+#include "buzzerControl.h"
+
+volatile uint8_t msg;
+
+typedef struct {
+	uint8_t cmd;
+	uint8_t data;
+} msgPkt;
 
 uint8_t UART2_Receive_Poll(void)
 {
 	//wait until receive data register is full
 	while (!(UART2->S1 & UART_S1_RDRF_MASK));
-	return (UART2->D);	
+	return (UART2->D);
+}
+
+void UART2_IRQHandler(void) {
+	NVIC_ClearPendingIRQ(UART2_IRQn);
+	if ((UART2->S1 & UART_S1_RDRF_MASK)) {
+		osSemaphoreRelease(uartSem);
+		msg = UART2->D;
+	}
+
 }
 
 /*----------------------------------------------------------------------------
@@ -35,6 +47,15 @@ void tMotorControl (void *argument) {
 }
 
 void tLED (void *argument) {
+	uint8_t input = msg;
+	osSemaphoreAcquire(uartSem, osWaitForever);
+	if (input == 0x10) {
+		control_RGB_LEDs(0, true);
+	}
+	osDelay(100);
+	control_RGB_LEDs(0, false);
+	osDelay(100);
+	input = 0;
 
 }
 
@@ -52,6 +73,7 @@ int main (void) {
   SystemCoreClockUpdate();
 	initUART2();
 	initLED();
+	initPWM();
   // ...
  
   osKernelInitialize();                 // Initialize CMSIS-RTOS
@@ -59,6 +81,7 @@ int main (void) {
 	osThreadNew(tLED, NULL, NULL);
 	osThreadNew(tAudio, NULL, NULL);
 	osThreadNew(tMotorControl, NULL, NULL);
+	uartSem = osSemaphoreNew(1,1,NULL);
   osKernelStart();                      // Start thread execution
   for (;;) {}
 }
