@@ -41,21 +41,25 @@ void app_main (void *argument) {
 }
 
 void tBrain (void *argument) {
-    osSemaphoreAcquire(uartSem, osWaitForever);
-    msg = Q_Dequeue(&uartQ)
+    for(;;){
+        osSemaphoreAcquire(uartSem, osWaitForever);
+        msg = Q_Dequeue(&uartQ);
+        osSemaphoreRelease(motorSem);
+    }
 }
 
 void tMotorControl (void *argument) {
     for(;;){
         osSemaphoreAcquire(motorSem, osWaitForever);
 
-        enum LongiMovement move = msg % 4;
-        enum Turning turn = (msg >> 2) % 4;
+        enum LongiMovement move = msg % 4; // bits 0 - 1
+        enum Turning turn = (msg >> 2) % 4; // bits 2 - 3
+        uint8_t power = (msg >> 4) % 8; // bits 4 - 6
 
         if (msg % 4 == 3) move = 0;
         if ((msg >> 2) % 4 == 3) turn = 0; // handle invalid inputs
 
-        motorControl(enum LongiMovement move, enum Turning turn, uint8_t power);
+        motorControl(move, turn, power);
     }
 }
 
