@@ -5,6 +5,7 @@
 #include "progInit.h"
 #include "ledControl.h"
 #include "buzzerControl.h"
+#include "motorControls.c"
 
 volatile uint8_t msg;
 
@@ -43,20 +44,28 @@ void tBrain (void *argument) {
 }
 
 void tMotorControl (void *argument) {
+    for(;;){
+        osSemaphoreAcquire(motorSem, osWaitForever);
 
+        enum LongiMovement move = msg % 4;
+        enum Turning turn = (msg >> 2) % 4;
+
+        motorControl(enum LongiMovement move, enum Turning turn, uint8_t power);
+    }
 }
 
 void tLED (void *argument) {
-	uint8_t input = msg;
-	osSemaphoreAcquire(uartSem, osWaitForever);
-	if (input == 0x10) {
-		control_RGB_LEDs(0, true);
+    for(;;){
+        uint8_t input = msg;
+        osSemaphoreAcquire(uartSem, osWaitForever);
+        if (input == 0x10) {
+            control_RGB_LEDs(0, true);
+        }
+        osDelay(100);
+        control_RGB_LEDs(0, false);
+        osDelay(100);
+        input = 0;
 	}
-	osDelay(100);
-	control_RGB_LEDs(0, false);
-	osDelay(100);
-	input = 0;
-
 }
 
 void tAudio (void *argument) {
@@ -82,6 +91,7 @@ int main (void) {
 	osThreadNew(tAudio, NULL, NULL);
 	osThreadNew(tMotorControl, NULL, NULL);
 	uartSem = osSemaphoreNew(1,1,NULL);
+	motorSem = osSemaphoreNew(1, 1, NULL);
   osKernelStart();                      // Start thread execution
   for (;;) {}
 }

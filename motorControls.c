@@ -243,7 +243,7 @@ void moveBackwardRight(int power)
 // MOTOR CONTROLS IN A SINGLE FUNCTION
 //--------------------------------------------------------------------------------------------------------------------------------
 
-enum LateralMovement 
+enum LongiMovement 
 {
 	NONE = 0,
 	FORWARD = 1,
@@ -258,7 +258,7 @@ enum Turning
 };
 
 /* 
-	Create const float arrays[3][3] to hold lateral and turn states for 
+	Create const float arrays[3][3] to hold moveeral and turn states for 
 	TPM0_C0V, TPM0_C1V, TPM0_C2V, TPM0_C3V 
 */
 
@@ -306,7 +306,7 @@ const float control_TPM0_C3V[3][3] =
   {1.0, 1.0, TURN_MULTIPLIER}, // NO_TURN, LEFT, RIGHT
 };
 
-void motorControl(enum LateralMovement lat, enum Turning turn, uint8_t power) 
+void motorControl(enum LongiMovement move, enum Turning turn, uint8_t power) 
 {
 	// Unsigned Int can never go below 0
 	if (power > 100) {
@@ -315,8 +315,8 @@ void motorControl(enum LateralMovement lat, enum Turning turn, uint8_t power)
 	
 	float dutyCycle = (float) power / 100.0f;
 	
-  TPM0_C0V = TPM0->MOD * dutyCycle * control_TPM0_C0V[lat][turn];
-  TPM0_C1V = TPM0->MOD * dutyCycle * control_TPM0_C1V[lat][turn];
-  TPM0_C2V = TPM0->MOD * dutyCycle * control_TPM0_C2V[lat][turn];
-  TPM0_C3V = TPM0->MOD * dutyCycle * control_TPM0_C3V[lat][turn];
+  TPM0_C0V = TPM0->MOD * dutyCycle * control_TPM0_C0V[move][turn];
+  TPM0_C1V = TPM0->MOD * dutyCycle * control_TPM0_C1V[move][turn];
+  TPM0_C2V = TPM0->MOD * dutyCycle * control_TPM0_C2V[move][turn];
+  TPM0_C3V = TPM0->MOD * dutyCycle * control_TPM0_C3V[move][turn];
 }
