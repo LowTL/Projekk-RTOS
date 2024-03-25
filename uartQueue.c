@@ -1,4 +1,4 @@
-#define Q_SIZE 32
+#define Q_SIZE 4
 typedef struct {
 	uint8_t Data[Q_SIZE];
 	unsigned int Head; 				// points to oldest data element
