@@ -8,6 +8,7 @@
 #include "motorControls.c"
 
 volatile uint8_t msg;
+volatile Q_T uartQ;
 
 typedef struct {
 	uint8_t cmd;
@@ -24,8 +25,8 @@ uint8_t UART2_Receive_Poll(void)
 void UART2_IRQHandler(void) {
 	NVIC_ClearPendingIRQ(UART2_IRQn);
 	if ((UART2->S1 & UART_S1_RDRF_MASK)) {
+	    Q_Enqueue(&uartQ, UART2 -> D);
 		osSemaphoreRelease(uartSem);
-		msg = UART2->D;
 	}
 
 }
@@ -40,7 +41,8 @@ void app_main (void *argument) {
 }
 
 void tBrain (void *argument) {
-
+    osSemaphoreAcquire(uartSem, osWaitForever);
+    msg = Q_Dequeue(&uartQ)
 }
 
 void tMotorControl (void *argument) {
@@ -60,7 +62,6 @@ void tMotorControl (void *argument) {
 void tLED (void *argument) {
     for(;;){
         uint8_t input = msg;
-        osSemaphoreAcquire(uartSem, osWaitForever);
         if (input == 0x10) {
             control_RGB_LEDs(0, true);
         }
@@ -86,6 +87,7 @@ int main (void) {
 	initUART2();
 	initLED();
 	initPWM();
+	Q_Init(&uartQ);
   // ...
  
   osKernelInitialize();                 // Initialize CMSIS-RTOS
