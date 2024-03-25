@@ -50,6 +50,9 @@ void tMotorControl (void *argument) {
         enum LongiMovement move = msg % 4;
         enum Turning turn = (msg >> 2) % 4;
 
+        if (msg % 4 == 3) move = 0;
+        if ((msg >> 2) % 4 == 3) turn = 0; // handle invalid inputs
+
         motorControl(enum LongiMovement move, enum Turning turn, uint8_t power);
     }
 }
