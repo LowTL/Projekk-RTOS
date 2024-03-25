@@ -8,7 +8,10 @@
 #include "motorControls.c"
 
 volatile uint8_t msg;
-volatile Q_T uartQ;
+Q_T uartQ;
+enum LongiMovement curr_move;
+enum Turning curr_turn;
+bool is_ended;
 
 typedef struct {
 	uint8_t cmd;
@@ -44,6 +47,15 @@ void tBrain (void *argument) {
     for(;;){
         osSemaphoreAcquire(uartSem, osWaitForever);
         msg = Q_Dequeue(&uartQ);
+
+        curr_move = msg % 4; // bits 0 - 1
+        curr_turn = (msg >> 2) % 4; // bits 2 - 3
+        uint8_t power = (msg >> 4) % 8; // bits 4 - 6
+        is_ended = (msg >> 7); // bit 7
+
+        if (msg % 4 == 3) move = 0;
+        if ((msg >> 2) % 4 == 3) turn = 0; // handle invalid inputs
+
         osSemaphoreRelease(motorSem);
     }
 }
@@ -52,14 +64,10 @@ void tMotorControl (void *argument) {
     for(;;){
         osSemaphoreAcquire(motorSem, osWaitForever);
 
-        enum LongiMovement move = msg % 4; // bits 0 - 1
-        enum Turning turn = (msg >> 2) % 4; // bits 2 - 3
-        uint8_t power = (msg >> 4) % 8; // bits 4 - 6
-
-        if (msg % 4 == 3) move = 0;
-        if ((msg >> 2) % 4 == 3) turn = 0; // handle invalid inputs
-
-        motorControl(move, turn, power);
+        TPM0_C0V = TPM0->MOD * dutyCycle * control_TPM0_C0V[move][turn];
+        TPM0_C1V = TPM0->MOD * dutyCycle * control_TPM0_C1V[move][turn];
+        TPM0_C2V = TPM0->MOD * dutyCycle * control_TPM0_C2V[move][turn];
+        TPM0_C3V = TPM0->MOD * dutyCycle * control_TPM0_C3V[move][turn];
     }
 }
 
