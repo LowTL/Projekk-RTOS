@@ -13,12 +13,13 @@ volatile uint8_t input = 0; //check if interrupt triggers
 volatile uint8_t input2 = 0; //check if motor update triggers
 volatile uint8_t right_motor = 0;
 volatile uint8_t left_motor = 0;
-volatile int8_t led_state = 0
+volatile bool isStationary = false;
 
 uint8_t
 
 osSemaphoreId_t uartSem;
 osSemaphoreId_t motorSem;
+osSemaphoreId_t ledSem;
 
 
 typedef struct {
@@ -126,7 +127,7 @@ void tBrain (void *argument) {
 
         uint8_t right_motor_speed = (right_motor & 0b11);
         uint8_t left_motor_speed = (left_motor & 0b11);
-        led_state = right_motor_speed == 0 && left_motor_speed == 0;
+        isStationary = right_motor_speed == 0 && left_motor_speed == 0;
         osSemaphoreRelease(motorSem, osWaitForever);
 	}
 	}
@@ -160,7 +161,7 @@ void tLed_red (void *argument) {
     uint32_t delay = 250;
 
     for(;;) {
-    delay = (led_state == 0) ? 250 : 500;
+    delay = (isStationary) ? 250 : 500;
 
     PTB->PTOR = 0b01 << RED_LED;
     osDelay(delay);
@@ -172,7 +173,7 @@ void tLed_green (void *argument) {
     uint8_t j = i + 1;
 
     for(;;) {
-        if (led_state == 0) {
+        if (isStationary) {
             PTB->PSOR = 0b11111111 << GREEN_LED; // turn all green LEDs on
         } else {
             i = (i == 7) ? 0 : i + 1;
@@ -187,24 +188,24 @@ void tLed_green (void *argument) {
 int main (void) {
 
   // System Initialization
-  SystemCoreClockUpdate();
+    SystemCoreClockUpdate();
 	initUART2();
 	initLED();
 	initMotors();
   // ...
 
-  osKernelInitialize();                 // Initialize CMSIS-RTOS
+    osKernelInitialize();                 // Initialize CMSIS-RTOS
 
 	uartSem = osSemaphoreNew(1,0,NULL);
 	motorSem = osSemaphoreNew(1,0,NULL);
 
-  osThreadNew(tBrain, NULL, NULL);    // Create application main thread
+    osThreadNew(tBrain, NULL, NULL);    // Create application main thread
 //	osThreadNew(tLED, NULL, NULL);
 //	osThreadNew(tAudio, NULL, NULL);
     osThreadNew(tLed_red, NULL, NULL);
     osThreadNew(tLed_green, NULL, NULL);
 	osThreadNew(tMotorControl, NULL, NULL);
-  osKernelStart();                      // Start thread execution
+    osKernelStart();                      // Start thread execution
 
 }
 
