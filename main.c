@@ -13,9 +13,12 @@ volatile uint8_t input = 0; //check if interrupt triggers
 volatile uint8_t input2 = 0; //check if motor update triggers
 volatile uint8_t right_motor = 0;
 volatile uint8_t left_motor = 0;
+volatile int8_t led_state = 0
+
+uint8_t
 
 osSemaphoreId_t uartSem;
-osSemaphoreId_t motorMove; //currently unused
+osSemaphoreId_t motorSem;
 
 
 typedef struct {
@@ -50,7 +53,7 @@ void rightMotor (int input) {
 			right_speed = 0;
 		break;
 	}
-	if(input>>2) { //move fwd
+	if(input & (0b100) { //move fwd
 		TPM0_C0SC &= ~((TPM_CnSC_ELSB_MASK) | (TPM_CnSC_ELSA_MASK));
 		TPM0_C0SC |= (TPM_CnSC_ELSA(0)) | (TPM_CnSC_ELSB(1));
 
@@ -86,7 +89,7 @@ void leftMotor (int input) {
 		break;
 	}
 
-	if(input>>2) { //move fwd
+	if(input & (0b100)) { //move fwd
 		TPM0_C3SC &= ~((TPM_CnSC_ELSB_MASK) | (TPM_CnSC_ELSA_MASK));
 		TPM0_C3SC |= (TPM_CnSC_ELSA(0)) | (TPM_CnSC_ELSB(1));
 
@@ -117,16 +120,24 @@ void UART2_IRQHandler(void) {
 
 void tBrain (void *argument) {
 	for (;;) {
+	    osSemaphoreAcquire(uartSem,osWaitForever);
+	    right_motor = (msg & 0b00000111);
+        left_motor = (msg & 0b00111000) >> 3;
+
+        uint8_t right_motor_speed = (right_motor & 0b11);
+        uint8_t left_motor_speed = (left_motor & 0b11);
+        led_state = right_motor_speed == 0 && left_motor_speed == 0;
+        osSemaphoreRelease(motorSem, osWaitForever);
+	}
 	}
 }
 
 void tMotorControl (void *argument) {
 
 	for(;;) {
-		osSemaphoreAcquire(uartSem,osWaitForever);
+		osSemaphoreAcquire(motorSem,osWaitForever);
 		input2 = input2 + 1;
-		right_motor = (msg & 0b00000111);
-		left_motor = (msg & 0b00111000) >> 3;
+
 		rightMotor(right_motor);
 		leftMotor(left_motor);
 	}
@@ -134,14 +145,10 @@ void tMotorControl (void *argument) {
 }
 
 void tLED (void *argument) {
-	for(;;) {
-	//	osSemaphoreAcquire(uartSem, osWaitForever);
-		control_RGB_LEDs(0, true);
-		osDelay(1000);
-		control_RGB_LEDs(0, false);
-		osDelay(1000);
-//		osSemaphoreRelease(uartSem);
 
+
+	for(;;) {
+//		osSemaphoreRelease(uartSem);
 	}
 }
 
@@ -149,8 +156,32 @@ void tAudio (void *argument) {
 
 }
 
-void Serial_ISR (void *argument) {
+void tLed_red (void *argument) {
+    uint32_t delay = 250;
 
+    for(;;) {
+    delay = (led_state == 0) ? 250 : 500;
+
+    toggleLedRed();
+    osDelay(delay);
+    }
+}
+
+void tLed_green (void *argument) {
+    uint8_t i = 0;
+    uint8_t j = i + 1;
+
+    for(;;) {
+        if (led_state == 0) {
+            // turn all green leds on
+        } else {
+            //turn green led at index j on
+            //turn green led at index i off
+            i = (i == 7) ? 0 : i + 1;
+            j = (i == 7) ? 0 : i + 1;
+            osDelay(100);
+        }
+    }
 }
 
 int main (void) {
@@ -165,11 +196,13 @@ int main (void) {
   osKernelInitialize();                 // Initialize CMSIS-RTOS
 
 	uartSem = osSemaphoreNew(1,0,NULL);
-	motorMove = osSemaphoreNew(1,0,NULL);
+	motorSem = osSemaphoreNew(1,0,NULL);
 
   osThreadNew(tBrain, NULL, NULL);    // Create application main thread
-	osThreadNew(tLED, NULL, NULL);
+//	osThreadNew(tLED, NULL, NULL);
 //	osThreadNew(tAudio, NULL, NULL);
+    osThreadNew(tLed_red, NULL, NULL);
+    osThreadNew(tLed_green, NULL, NULL);
 	osThreadNew(tMotorControl, NULL, NULL);
   osKernelStart();                      // Start thread execution
 
