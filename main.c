@@ -162,7 +162,7 @@ void tLed_red (void *argument) {
     for(;;) {
     delay = (led_state == 0) ? 250 : 500;
 
-    toggleLedRed();
+    PTB->PTOR = 0b01 << RED_LED;
     osDelay(delay);
     }
 }
@@ -173,12 +173,12 @@ void tLed_green (void *argument) {
 
     for(;;) {
         if (led_state == 0) {
-            // turn all green leds on
+            PTB->PSOR = 0b11111111 << GREEN_LED; // turn all green LEDs on
         } else {
-            //turn green led at index j on
-            //turn green led at index i off
             i = (i == 7) ? 0 : i + 1;
             j = (i == 7) ? 0 : i + 1;
+            PTB->PCOR = 0b01 << (GREEN_LED + i); // turn green LED at position i off
+            PTB->PSOR = 0b01 << (GREEN_LED + j); // turn green led at position j on
             osDelay(100);
         }
     }
